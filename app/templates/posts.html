@@ -1,0 +1,42 @@
+{% extend 'base.html %'}{% block title %}{{username}}'s posts{% endblock %}
+ {% block content %}
+<h1 class="text-center" >{% block header %}posts{% endblock %}</h1>
+<div id="posts">
+    {% for post in posts %}
+    <div class="card-header-dark">
+    <div class="card-header d-flex" style="justify-content: space-between; align-items: center;">
+        <a href="/posts/{{post.user.username}}">{{post.user.username}}</a>
+        {% if user.id == post.author %}
+        <div class="btn-group">
+            <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown" >
+
+            </button>
+            <ul class="dropdown-menu" >
+                <li>
+                    <a href="/delete-post/{{post.id}}" class="dropdown-item">Delete</a>
+                </li>
+
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        <div class="card-text">
+            {{post.text}}
+        </div>
+    </div>
+    <div class="card-footer text-muted">{{post.date_created }}</div>
+    </div>
+    <br><br>
+    {% endfor %}
+    {% block footer %}
+</div>
+    <div class="text-center">
+        <a href="/create-post">
+            <button type="button" class="btn btn-primary btn-lg" >Create post</button>
+        </a>
+    </div>
+    {% enblock %}
+
+
+{% endblock %}

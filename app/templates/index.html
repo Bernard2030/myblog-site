@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+<!-- {% extends 'post_div.html %'} -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    {% block scripts%}
+    {{ super() }}
+    <script src="{{url_for('static',filename='js/bootstrap.min.js')}}"></script>
+    {% endblock %}
+
+{% block styles%}
+    {{ super() }}
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css"
+    integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous" />
+
+    <link rel="stylesheet" href="{{url_for('static',filename='css/bootstrap.min.css')}}"/>
+
+     <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script> 
+    {% endblock %}
+    {% block content %}
+    <h1 class="text-center">This are the post</h1>
+    <div id="posts">
+        {% for post in posts %}
+        <div class="card-header-dark">
+        <div class="card-header d-flex" style="justify-content: space-between; align-items: center;">
+            <a href="/posts/{{post.user.username}}">{{post.user.username}}</a>
+            {% if user.id == post.author %}
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown" >
+
+                </button>
+                <ul class="dropdown-menu" >
+                    <li>
+                        <a href="/delete-post/{{post.id}}" class="dropdown-item">Delete</a>
+                    </li>
+
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+        <div class="card-body">
+            <div class="card-text">
+                {{post.text}}
+            </div>
+        </div>
+        <div class="card-footer text-muted">{{post.date_created }}</div>
+        </div>
+        <br><br>
+        {% endfor %}
+        <div class="text-center">
+            <a href="/create-post">
+                <button type="button" class="btn btn-primary btn-lg" >Create post</button>
+            </a>
+        </div>
+    </div>
+   
+
+
+{% endblock %}
+  
+    
+</body>
+</html>

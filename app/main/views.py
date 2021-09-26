@@ -1,14 +1,17 @@
 from flask import render_template,request,redirect,url_for,abort, flash
 from . import main
 from .forms import ReviewForm, UpdateProfile
-from .forms import PostForm, CommentForm, UpdateProfile
+from .forms import Post_Form,PostForm, UpdateProfile
 from ..models import Post, Comment, User, Upvote
 from flask_login import login_required,current_user
 from .. import db,photos
 from app.requests import get_Quotes
 import markdown2 
 import os
-import secrets 
+import secrets
+
+
+import app 
 
 
 
@@ -30,10 +33,10 @@ def save_picture(form_picture):
     picture_fn = random_hex + f_ext
     picture_path = os.path.join(app.root_path, 'static/profile_pic', picture_fn)
 
-    output_size = (125, 125)
-    i = Image.open(form_picture)
-    i.thumbnail(output_size)
-    i.save(picture_path)
+    # output_size = (125, 125)
+    # i = Image.open(form_picture)
+    # i.thumbnail(output_size)
+    # i.save(picture_path)
 
     return picture_fn
 
@@ -49,7 +52,7 @@ def save_picture(form_picture):
 @main.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
-    form = PostForm()
+    form = Post_Form()
     if form.validate_on_submit():
         if form.picture.data:
             picture_file = save_picture(form.picture.data)

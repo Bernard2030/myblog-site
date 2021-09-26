@@ -20,6 +20,7 @@ import secrets
 def index():
     quotes = get_Quotes()
     posts = Post.query.all()
+    
 
     return render_template('index.html', quotes = quotes, posts = posts, current_user = current_user)
 

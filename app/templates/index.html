@@ -1,5 +1,8 @@
 {% extends 'base.html' %}
-<!-- {% extends 'post_div.html %'} -->
+{%from 'display_quote_macro.html' import display_quotes%}
+{% from 'display_post_macro.html' import display_posts%}
+{%block content%}
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -23,48 +26,24 @@
     <link rel="stylesheet" href="{{url_for('static',filename='css/bootstrap.min.css')}}"/>
 
      <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script> 
-    {% endblock %}
-    {% block content %}
-    <h1 class="text-center">This are the post</h1>
-    <div id="posts">
-        {% for post in posts %}
-        <div class="card-header-dark">
-        <div class="card-header d-flex" style="justify-content: space-between; align-items: center;">
-            <a href="/posts/{{post.user.username}}">{{post.user.username}}</a>
-            {% if user.id == post.author %}
-            <div class="btn-group">
-                <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown" >
+     {% endblock %}
 
-                </button>
-                <ul class="dropdown-menu" >
-                    <li>
-                        <a href="/delete-post/{{post.id}}" class="dropdown-item">Delete</a>
-                    </li>
-
-                </ul>
-            </div>
-            {% endif %}
-        </div>
-        <div class="card-body">
-            <div class="card-text">
-                {{post.text}}
-            </div>
-        </div>
-        <div class="card-footer text-muted">{{post.date_created }}</div>
-        </div>
-        <br><br>
-        {% endfor %}
-        <div class="text-center">
-            <a href="/create-post">
-                <button type="button" class="btn btn-primary btn-lg" >Create post</button>
-            </a>
-        </div>
-    </div>
-   
-
-
-{% endblock %}
-  
+     {% block content %}
     
-</body>
-</html>
+      <h1>{{display_quotes(quotes)}}</h1>
+     {% for post in posts %}
+     
+     <article class="media content-section">
+         <img class="rounded-circle article-img"
+              src="{{ url_for('static', filename='profile_pic/' + post.author.image_file) }}">
+         <div class="media-body">
+             <div class="article-metadata">
+                 <a class="mr-2" href="#">{{ post.author.username }}</a>
+                 <small class="text-muted">{{ post.date_posted.strftime('%Y-%m-%d') }}</small>
+             </div>
+             <h2><a class="article-title" href="{{ url_for('main.mypost', post_id=post.id) }}">{{ post.title }}</a></h2>
+             <p class="article-content">{{ post.content }}</p>
+         </div>
+     </article>
+     {% endfor %}
+     {%endblock%}

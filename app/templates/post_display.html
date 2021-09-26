@@ -1,4 +1,21 @@
-{% extends 'base.html'%}
+{% macro display_posts(posts)%}
+<div>
+    {% for post in posts%}
+    <article class="media content-section">
+        <div class="media-body">
+            <div class="article-metadata">
+                <a class="mr-2" href="#">{{ post.user_id }}</a>
+                <!--                <small class="text-muted">{{ post.title }}</small>-->
+            </div>
+            <h2><a class="article-title" href="#">{{ post.title }}</a></h2>
+            <p class="article-content">{{ post.content }}</p>
+        </div>
+    </article>
+    {% endfor%}
+</div>
+{%endmacro%}
+
+<!-- {% extends 'base.html'%}
 
 
 {% block styles %}
@@ -11,4 +28,4 @@
 {% block content %}
 <div>{{ display_pitches(pitch) }}</div>
 <div class="">{{display_comments(comments)}}</div>
-{% endblock %}
+{% endblock %} -->

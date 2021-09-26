@@ -1,8 +1,7 @@
 from app import create_app,db
 from  flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager,Server
-from app.models import User,Role,Pitch,Comment,Upvote,Downvote
-# creating app instance
+from app.models import User,Role
 app = create_app('development')
 # development,production
 migrate = Migrate(app,db)

@@ -22,7 +22,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(128),index = True)
     email = db.Column(db.String(128),unique = True,index = True)
     password_hash = db.Column(db.String(128))
-    # date_created = db.Column(db.Date(timezone = True), default = func.now())
+    date_created = db.Column(db.Date(timezone = True), default = func.now())
     posts = db.relationship('post', backref= 'user', passive_deletes=True)
     
 
@@ -61,3 +61,10 @@ class Post(db.Model):
     text = db.Column(db.text, nullable=False)
     date_created = db.Column(db.Date(timezone = True), default = func.now())
     author = db.Column(db.Integer, db.foreignKey('user.id', ondelete="CASCADE"), nullable=False) 
+
+class Comment(db.Model): 
+    id = db.Column(db.Integer,primary_key = True)
+    text = db.Column(db.text, nullable=False)
+    date_created = db.Column(db.Date(timezone = True), default = func.now())
+    author = db.Column(db.Integer, db.foreignKey('user.id', ondelete="CASCADE"), nullable=False) 
+    post_id = db.Column(db.Integer, db.Foreighnkey('post_id', ondelete = "CASCADE"), nullable=False)

@@ -1,63 +1,24 @@
-{% extends 'base.html'%}
-{% import 'bootstrap/wtf.html' as wtf %}
 
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf%}
+{% from 'display_comment_macro.html' import display_comments as commentDisplay%}
+{% block content %
 
-{% block content %}
-
-    <div  id="particles-js"  >  
-            <div class=" row" >
-                    
-                    <div class="col-md-2"></div>
-                    <div class="col-md-8" id="postform">
-                        <h2 class="text-center">Create Your Pitch !</h2>
-                        {{wtf.quick_form(form)}}
-                    </div>
-                    <div class="col-md-2"></div>
-            </div>
-    </div>
-   
-{% endblock%}
-
-
-<!-- {% extend 'base.html %'}{% block title %}{{username}}'s posts{% endblock %}
- {% block content %}
-<h1 class="text-center" >{% block header %}posts{% endblock %}</h1>
-<div id="posts">
-    {% for post in posts %}
-    <div class="card-header-dark">
-    <div class="card-header d-flex" style="justify-content: space-between; align-items: center;">
-        <a href="/posts/{{post.user.username}}">{{post.user.username}}</a>
-        {% if user.id == post.author %}
-        <div class="btn-group">
-            <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown" >
-
-            </button>
-            <ul class="dropdown-menu" >
-                <li>
-                    <a href="/delete-post/{{post.id}}" class="dropdown-item">Delete</a>
-                </li>
-
-            </ul>
-        </div>
-        {% endif %}
-    </div>
+<article>
+    <div class="card mb-3">
+    <img src="..." class="card-img-top" alt="...">
     <div class="card-body">
-        <div class="card-text">
-            {{post.text}}
-        </div>
+      <h5 class="card-title">Card title</h5>
+      <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+      <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
     </div>
-    <div class="card-footer text-muted">{{post.date_created }}</div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">Card title</h5>
+      <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+      <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
     </div>
-    <br><br>
-    {% endfor %}
-    {% block footer %}
-</div>
-    <div class="text-center">
-        <a href="/create-post">
-            <button type="button" class="btn btn-primary btn-lg" >Create post</button>
-        </a>
-    </div>
-    {% enblock %}
-
-
-{% endblock %} -->
+    <img src="..." class="card-img-bottom" alt="...">
+  </div>
+</article>

@@ -1,11 +1,14 @@
-from flask import render_template,request,redirect,url_for,abort
+from flask import render_template,request,redirect,url_for,abort, flash
 from . import main
 from .forms import ReviewForm, UpdateProfile
 from .forms import PostForm, CommentForm, UpdateProfile
 from ..models import Post, Comment, User, Upvote
 from flask_login import login_required,current_user
 from .. import db,photos
-import markdown2  
+from app.requests import get_Quotes
+import markdown2 
+import os
+import secrets 
 
 
 
@@ -15,80 +18,56 @@ import markdown2
 @main.route('/')
 @login_required
 def index():
+    quotes = get_Quotes()
+    posts = Post.query.all()
 
-    '''
-    View root page function that returns the index page and its data
+    return render_template('index.html', quotes = quotes, posts = posts, current_user = current_user)
 
-    '''
-   
+def save_picture(form_picture):
+    random_hex = secrets.token_hex(8)
+    _, f_ext = os.path.splitext(form_picture.filename)
+    picture_fn = random_hex + f_ext
+    picture_path = os.path.join(app.root_path, 'static/profile_pic', picture_fn)
+
+    output_size = (125, 125)
+    i = Image.open(form_picture)
+    i.thumbnail(output_size)
+    i.save(picture_path)
+
+    return picture_fn
 
 
-   
-    return render_template('index.html')
+# @main.route('/post')
+# @login_required
+# def post():
+#     Post = post.query.all()
+#     likes = Upvote.query.all()
+#     user = current_user
+#     return render_template('post_display.html', Post=Post, likes=likes, user=user)
 
-@main.route('/pitch')
+@main.route('/profile', methods=['GET', 'POST'])
 @login_required
-def post():
-    Post = post.query.all()
-    likes = Upvote.query.all()
-    user = current_user
-    return render_template('post_display.html', Post=Post, likes=likes, user=user)
-
-@main.route('/new_Post', methods=['GET', 'POST'])
-@login_required
-def new_Post():
+def profile():
     form = PostForm()
     if form.validate_on_submit():
-        title = form.title.data
-        post = form.post.data
-        user_id = current_user._get_current_object().id
-        Post_obj = Post(post=post, title=title,  user_id=user_id)
-        Post_obj.save()
-        return redirect(url_for('main.index'))
-    return render_template('post.html', form=form)
-
-@main.route('/comment/<id>', methods=['GET', 'POST'])
-@login_required
-def comment(id):
-    form = CommentForm()
-    post = Post.query.get(id)
-    user = User.query.all()
-    comment = Comment.query.filter_by(post_id=id).all()
-    if form.validate_on_submit():
-        comment = form.comment.data
-        post_id = id
-        user_id = current_user.id
-        new_comment = Comment(
-            comment=comment,
-            post_id=post_id,
-            user_id=user_id
-        )
-        new_comment.save()
-        new_comment = [new_comment]
-        print(new_comment)
-        return redirect(url_for('.comment', id =id))
-    return render_template('comment.html', form=form, Post=Post, comment=comment, user=user)
+        if form.picture.data:
+            picture_file = save_picture(form.picture.data)
+            current_user.image_file = picture_file
+        current_user.username = form.username.data
+        current_user.email = form.email.data
+        db.session.commit()
+        flash('Your account has been updated!', 'success')
+        return redirect(url_for('main.profile'))
+    elif request.method == 'GET':
+        form.username.data = current_user.username
+        form.email.data = current_user.email
+    image_file = url_for('static', filename='profile_pic/' + current_user.image_file)
+    return render_template('profile/profile.html', title='Profile', image_file=image_file, form=form)
 
 
 
-@main.route('/user/<username>', methods = ['GET', 'POST'])
-@login_required
-def profile(username):
-    user = User.query.filter_by(username = username).first()
 
-    if user is None:
-        abort(404)
-
-    form = PostForm()
-    if form.validate_on_submit():
-        title = form.title.data
-        pitch = form.pitch.data
-        category = form.category.data
-        user_id = current_user.id
-        Post_obj = Post(pitch=pitch, title=title, category=category, user_id=user_id)
-        Post_obj.save()
-
-    return render_template("profile/profile.html", user = user, form = form)
+    
 
 
 @main.route('/user/<username>/update',methods = ['GET','POST'])
@@ -120,6 +99,62 @@ def update_pic(username):
         db.session.commit()
     return redirect(url_for('main.profile',username = username))
 
+
+
+
+@main.route("/new_post", methods=['GET', 'POST'])
+@login_required
+def new_post():
+    form = PostForm()
+    if form.validate_on_submit():
+        post = Post(title=form.title.data, content=form.content.data, author=current_user)
+        post.save()
+        flash('Your post has been created!', 'success')
+        return redirect(url_for('main.index'))
+    return render_template('new_post.html', title='New Post',
+                           form=form, legend='New Post')
+
+
+@main.route("/post/<int:post_id>")
+@login_required
+def post(post_id):
+    comments = Comment.query.filter_by(post_id=post_id).all()
+    print(comments)
+    heading = 'comments'
+    post = Post.query.get_or_404(post_id)
+    return render_template('posts.html', title=post.title, post=post, comments=comments, heading=heading)
+
+
+@main.route("/post/<int:post_id>/update", methods=['GET', 'POST'])
+@login_required
+def update_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.author != current_user:
+        abort(403)
+    form = PostForm()
+    if form.validate_on_submit():
+        post.title = form.title.data
+        post.content = form.content.data
+        db.session.commit()
+        flash('Your post has been updated!', 'success')
+        return redirect(url_for('main.mypost', post_id=post.id))
+    elif request.method == 'GET':
+        form.title.data = post.title
+        form.content.data = post.content
+    return render_template('new_post.html', title='Update Post',
+                           form=form, legend='Update Post')
+
+
+@main.route("/post/<int:post_id>/delete", methods=['POST'])
+@login_required
+def delete_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.author != current_user:
+        abort(403)
+    post.delete()
+    flash('Your post has been deleted!', 'success')
+    return redirect(url_for('main.index'))    
+
 @main.route('/like/<int:id>', methods=['GET', 'POST'])
 @login_required
 def upvote(id):
@@ -129,87 +164,10 @@ def upvote(id):
     return redirect(url_for('main.Posts'))
 
 
-
-
-
-
-
-
-# @main.route('/dislike/<int:id>', methods=['GET', 'POST'])
-# @login_required
-# def downvote(id):
-#     Pitch = User.query.get(id)
-#     vote = Downvote(Pitch=Pitch, downvote=1)
-#     vote.save()
-#     return redirect(url_for('main.Pitchs'))
-    
-
-
-
-
-
-# # Views
-
-# @main.route('/')
-# @login_required
-# def index():
-#     posts = Post.query.all()
-
-#     '''
-#     View root page function that returns the index page and its data
-
-#     '''
-   
-
-
-   
-#     return render_template('index.html', user = current_user, posts = posts)
-
-
-# @main.route('/create_post', method=['GET', 'POST'])
-# @login_required
-# def create_post():
-#     if request.method == "POST":
-#        text = request.form.get('text')
-#     if not text:
-#             flash("post cannot be empty", cateqory='error') 
-#     else:
-#                 Post = post(text = text, author = current_user.id)
-#                 db.session.add(Post)
-#                 db.session.commit()        
-#                 flash("post created", category="success")
-#                 return redirect(url_for('main.index'))
-
-
-
-
-#     return render_template('create_post.html', user=current_user) 
-
-# @main.route('delete-post/<id>')
-# @login_required
-# def delete_post(id):
-#     post = Post.query.filter_by(id = id).first()
-
-#     if not post:
-#         flash("post does'nt exist", category='error')
-#     elif current_user.id != post.id:
-#             flash("You do not have permision to delete this post", category='error')
-#     else:
-#          db.session.delete(post)
-#          db.session.commit()
-#          flash("post deleted", category='success')
-
-#          return redirect(url_for('main.index'))  
-
-
-# @main.route('/posts/<username>')
-# @login_required
-# def posts(username):
-#     user= User.query.filter_bu(username = username).first()
-
-#     if not user:
-#         flash("No user with that name exist", category='error')
-#         return redirect(url_for('index.html'))
-
-#     posts = user.posts
-#     return render_template("posts.html", user = current_user, posts=posts, username = username)               
+@main.route('/comment/<post_id>', methods=['Post', 'GET'])
+@login_required
+def comment(post_id):
+    comment = request.form.get('newcomment')
+    new_comment = Comment(comment=comment, user_id=current_user._get_current_object().id, post_id=post_id)
+    new_comment.save()
+    return redirect(url_for('main.Posts', post_id=post_id))

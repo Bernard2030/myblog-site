@@ -7,7 +7,10 @@
       <div class="collapse navbar-collapse" id="navbarNavDropdown">
         <ul class="navbar-nav navbar-right">
           <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="#">Home</a>
+            <a class="nav-link active" aria-current="page" href="#">{{current_user.username}}</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{url_for('main.profile',username = current_user.username)}}">PROFILE</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="{{url_for('auth.login')}}">GUEST </a>

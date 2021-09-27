@@ -1,10 +1,10 @@
 ## Myblog
-Is an application that allows users to create and share  opinions and other users can read and comment on them. the application also has random quotes that inspire users.
+Is an application that allows users to create and share opinions and other users can read and comment on them. the application also has random quotes that inspire users.
 
 ## Author
 Bernard Opiyo
 
-## Installation
+Installation
 Use the following command to install all the requirement applications. pip freeze -r requirements.txt
 
 ## setup
@@ -26,35 +26,37 @@ Running tests python3 manage.py test.
 ** Python3.8 ** Flask ** Javascript ** HTML5 ** Bootstrap5
 
 user story
-* As a user, I would like to view the blog posts on the site
-* As a user, I would like to comment on blog posts
-* As a user, I would like to view the most recent posts
-* As a user, I would like to an email alert when a new post is made by joining a subscription.
-* As a user, I would like to see random quotes on the site
-* As a writer, I would like to sign in to the blog.
-* As a writer, I would also like to create a blog from the application.
-* As a writer, I would like to delete comments that I find insulting or degrading.
-* As a writer, I would like to update or delete blogs I have created.
+
+As a user, I would like to view the blog posts on the site
+As a user, I would like to comment on blog posts
+As a user, I would like to view the most recent posts
+As a user, I would like to an email alert when a new post is made by joining a subscription.
+As a user, I would like to see random quotes on the site
+As a writer, I would like to sign in to the blog.
+As a writer, I would also like to create a blog from the application.
+As a writer, I would like to delete comments that I find insulting or degrading.
+As a writer, I would like to update or delete blogs I have created.
 ## BDD
 Login Inputs
 
-| Inputs  | Description |
+| Inputs | Description |
 | ------------- | ------------- |
-| Username | Account username, eg niez  |
-| Password  | Account password, eg @2030 |
+| Username  | Account username, eg niez |
+| Password | Account password, eg @2030  |
 
 	
 	
 	
 Signup inputs
 
-| Inputs  | Description|
+| Inputs  | Description |
 | ------------- | ------------- |
-| Username  | Account username, eg niez  |
-| Email | Account email e.g bro@gmail.com|
-|passward|Account password, eg @2030 |
+| Username | Account username, eg niez  |
+| Email | Account email e.g bro@gmail.com |
+|passward|Account password, eg @2030|
 |Confirm Password|Account password, eg @2030|
 
+	
 	
 	
 	

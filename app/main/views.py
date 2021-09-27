@@ -1,124 +1,137 @@
-import os
+from flask import render_template, redirect,url_for,abort,request
+from . import main
+from app.requests import get_quote
+from flask_login import login_required,current_user
+from ..models import User,Blog,Comment,Subscriber
+from ..import db, photos
 import secrets
+import os
+from PIL import Image
+from .forms import UpdateProfile,CreateBlog
+from ..email import mail_message
 
 
-from flask import render_template, url_for, redirect, request, flash, abort
-from flask_login import current_user, login_required
 
-from app import app
-from app import db
-from app.main import main
-from app.main.forms import UpdateForm, PostForm
-from app.models import Post, Like, Comment
-from app.requests import getQuotes
-
-
+#Views
 @main.route('/')
-@main.route('/home')
 def index():
-    quotes = getQuotes()
-    posts = Post.query.all()
-    return render_template('index.html', quotes=quotes, posts=posts, current_user=current_user)
+    quote = get_quote()
+    blogs = Blog.query.order_by(Blog.time.desc())
+    return render_template('index.html', blogs=blogs,quote = quote)
 
-
-def save_picture(form_picture):
-    random_hex = secrets.token_hex(8)
-    _, f_ext = os.path.splitext(form_picture.filename)
-    picture_fn = random_hex + f_ext
-    picture_path = os.path.join(app.root_path, 'static/profile_pic', picture_fn)
-
-    
-
-    return picture_fn
-
-
-@main.route('/profile', methods=['GET', 'POST'])
+@main.route('/profile/<name>',methods = ['POST','GET'])
 @login_required
-def profile():
-    form = UpdateForm()
-    if form.validate_on_submit():
-        if form.picture.data:
-            picture_file = save_picture(form.picture.data)
-            current_user.image_file = picture_file
-        current_user.username = form.username.data
-        current_user.email = form.email.data
+def profile(name):
+    user = User.query.filter_by(username = name).first()
+    if 'photo' in request.files:
+        filename = photos.save(request.files['photo'])
+        path = f'photos/{filename}'
+        user.profile_pic_path = path
         db.session.commit()
-        flash('Your account has been updated!', 'success')
-        return redirect(url_for('main.profile'))
+
+    return render_template('profile/profile.html',user = user)
+
+@main.route('/user/<name>/updateprofile', methods = ['POST','GET'])
+@login_required
+def updateprofile(name):
+    user = User.query.filter_by(username = name).first()
+    form = UpdateProfile()
+    if form.validate_on_submit():
+        user.username = form.username.data
+        user.email = form.email.data
+        user.bio = form.bio.data
+        db.session.commit()
+        return redirect(url_for('main.profile',name=user.username,))
     elif request.method == 'GET':
         form.username.data = current_user.username
         form.email.data = current_user.email
-    image_file = url_for('static', filename='profile_pic/' + current_user.image_file)
-    return render_template('profile/profile.html', title='Profile', image_file=image_file, form=form)
+        form.bio.data = current_user.bio
+    return render_template('profile/update.html', user = user, form =form)
 
-
-@main.route("/new_post", methods=['GET', 'POST'])
+@main.route('/new_post', methods=['POST','GET'])
 @login_required
-def new_post():
-    form = PostForm()
+def new_blog():
+    subscribers = Subscriber.query.all()
+    form = CreateBlog()
     if form.validate_on_submit():
-        post = Post(title=form.title.data, content=form.content.data, author=current_user)
-        post.save()
-        flash('Your post has been created!', 'success')
+        title = form.title.data
+        description = form.description.data
+        content = form.content.data
+        user_id =  current_user._get_current_object().id
+        blog = Blog(title=title,description = description, content=content,user_id=user_id)
+        blog.save()
+        for subscriber in subscribers:
+            mail_message("New Blog Post","email/new_blog",subscriber.email,blog=blog)
+
         return redirect(url_for('main.index'))
-    return render_template('new_post.html', title='New Post',
-                           form=form, legend='New Post')
+    return render_template('post.html', form = form)
 
-
-@main.route("/post/<int:post_id>")
+@main.route('/blog/<id>')
 @login_required
-def mypost(post_id):
-    comments = Comment.query.filter_by(post_id=post_id).all()
-    print(comments)
-    heading = 'comments'
-    post = Post.query.get_or_404(post_id)
-    return render_template('posts.html', title=post.title, post=post, comments=comments, heading=heading)
+def blog(id):
+    comments = Comment.query.filter_by(blog_id=id).all()
+    blog = Blog.query.get(id)
+    return render_template('blog_page.html',blog=blog,comments=comments)
+    
 
-
-@main.route("/post/<int:post_id>/update", methods=['GET', 'POST'])
+@main.route('/blog/<blog_id>/update', methods = ['GET','POST'])
 @login_required
-def update_post(post_id):
-    post = Post.query.get_or_404(post_id)
-    if post.author != current_user:
+def updateblog(blog_id):
+    blog = Blog.query.get(blog_id)
+    if blog.user != current_user:
         abort(403)
-    form = PostForm()
+    form = CreateBlog()
     if form.validate_on_submit():
-        post.title = form.title.data
-        post.content = form.content.data
+        blog.title = form.title.data
+        blog.description = form.description.data
+        blog.content = form.content.data
         db.session.commit()
-        flash('Your post has been updated!', 'success')
-        return redirect(url_for('main.mypost', post_id=post.id))
-    elif request.method == 'GET':
-        form.title.data = post.title
-        form.content.data = post.content
-    return render_template('new_post.html', title='Update Post',
-                           form=form, legend='Update Post')
+        return redirect(url_for('main.blog',id = blog.id)) 
+    if request.method == 'GET':
+        form.title.data = blog.title
+        form.description.data = blog.description
+        form.content.data = blog.content
+    return render_template('edit_blog.html', form = form)
 
 
-@main.route("/post/<int:post_id>/delete", methods=['POST'])
+
+@main.route('/comment/<blog_id>', methods = ['Post','GET'])
 @login_required
-def delete_post(post_id):
-    post = Post.query.get_or_404(post_id)
-    if post.author != current_user:
-        abort(403)
-    post.delete()
-    flash('Your post has been deleted!', 'success')
+def comment(blog_id):
+    blog = Blog.query.get(blog_id)
+    comment =request.form.get('newcomment')
+    new_comment = Comment(comment = comment, user_id = current_user._get_current_object().id, blog_id=blog_id)
+    new_comment.save()
+    return redirect(url_for('main.blog',id = blog.id))
+
+@main.route('/subscribe',methods = ['POST','GET'])
+def subscribe():
+    email = request.form.get('subscriber')
+    new_subscriber = Subscriber(email = email)
+    new_subscriber.save_subscriber()
+    mail_message("Subscribed to Niche Blogs","email/welcome_subscriber",new_subscriber.email,new_subscriber=new_subscriber)
     return redirect(url_for('main.index'))
 
-
-@main.route('/like/<int:id>', methods=['POST', 'GET'])
+@main.route('/blog/<blog_id>/delete', methods = ['POST'])
 @login_required
-def upvote(id):
-    post = Post.query.get(id)
-    like = Like(post=post, upvote=1)
-    like.save()
-    return redirect(url_for('main.myposts'))
+def delete_post(blog_id):
+    blog = Blog.query.get(blog_id)
+    if blog.user != current_user:
+        abort(403)
+    blog.delete()
+    return redirect(url_for('main.index'))
 
-
-@main.route('/comment/<post_id>', methods=['Post', 'GET'])
+@main.route("/blog/<int:id>/<int:comment_id>/delete")
 @login_required
-def comment(post_id):
-    comment = request.form.get('newcomment')
-    new_comment = Comment(comment=comment, user_id=current_user._get_current_object().id, post_id=post_id)
-    new_comment.save()
-    return redirect(url_for('main.mypost', post_id=post_id))
+def delete_comment(id, comment_id):
+    blog = Blog.query.filter_by(id = id).first()
+    comment = Comment.query.filter_by(id = comment_id).first()
+    db.session.delete(comment)
+    db.session.commit()
+    return redirect(url_for('main.blog',id = blog.id))
+
+@main.route('/user/<string:username>')
+def user_posts(username):
+    user = User.query.filter_by(username=username).first()
+    blogs = Blog.query.filter_by(user=user).order_by(Blog.time.desc())
+    return render_template('user.html',blogs=blogs,user = user)

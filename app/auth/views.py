@@ -1,44 +1,35 @@
-from flask import render_template, url_for, redirect, flash, request
-from flask_login import logout_user, login_user, current_user
-
-from app.auth import auth
-from app.auth.forms import LoginForm, RegisterForm
-from app.models import User
+from flask import render_template,url_for,flash,redirect,request
+from . import auth
+from flask_login import login_user,login_required,logout_user
+from .forms import RegForm,LoginForm
+from ..models import User
+from .. import db
 from ..email import mail_message
 
-
-@auth.route("/login", methods=['GET', 'POST'])
+@auth.route('/login', methods = ['GET','POST'])
 def login():
-    if current_user.is_authenticated:
-        return redirect(url_for('main.index'))
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
-        if user and user.check_password(form.password.data):
-            login_user(user, remember=form.remember.data)
-            next_url = request.args.get('next')
-            return redirect(next_url) if next_url else redirect(url_for('main.index'))
-        else:
-            flash('Login Unsuccessful. Please check email and password', 'danger')
-    return render_template('auth/login.html', title='Login', form=form)
+  form = LoginForm()
+  if form.validate_on_submit():
+    user = User.query.filter_by(email = form.email.data).first()
+    if user != None and user.verify_password(form.password.data):
+      login_user(user,form.remember.data)
+      return redirect(request.args.get('next') or url_for('main.index'))
+    flash('Invalid username or Password')
 
-
-@auth.route('/signup', methods=['GET', 'POST'])
-def signup():
-    form = RegisterForm()
-    if form.validate_on_submit():
-        username = form.username.data
-        email = form.email.data
-        password = form.password.data
-        user = User(username=username, email=email)
-        user.set_password(password)
-       
-        flash(f'Account created for {form.username.data}!', 'success')
-        return redirect(url_for('auth.login'))
-    return render_template('auth/signup.html', title='Sign Up', form=form, current_user=current_user)
-
+  return render_template('auth/login.html', loginform = form)
 
 @auth.route('/logout')
+@login_required
 def logout():
-    logout_user()
-    return redirect(url_for('auth.signup'))
+  logout_user()
+  return redirect(url_for("main.index"))
+
+@auth.route('/signup', methods = ["GET","POST"])
+def signup():
+  form = RegForm()
+  if form.validate_on_submit():
+    user = User(email = form.email.data, username = form.username.data, password = form.password.data)
+    user.save_u()
+    mail_message("Welcome to the Blog","email/welcome_user",user.email,user=user)
+    return redirect(url_for('auth.login'))
+  return render_template('auth/register.html', r_form = form)

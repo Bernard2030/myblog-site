@@ -1,116 +1,114 @@
+from enum import unique
+from flask_sqlalchemy.model import Model
+from . import db,login_manager
 from datetime import datetime
-
-from flask_login import UserMixin, current_user
-from werkzeug.security import generate_password_hash, check_password_hash
-
-from app import db, login_manager
-
-
-class User(db.Model, UserMixin):
-    __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(255), nullable=True, unique=True)
-    email = db.Column(db.String(255), unique=True, nullable=False)
-    password = db.Column(db.String(255), nullable=False)
-    image_file = db.Column(db.String(255), nullable=False, default='default.jpg')
-    posts = db.relationship('Post', backref='author', lazy=True)
-    comment = db.relationship('Comment', backref='author', lazy=True)
-
-    def save(self):
-        db.session.add(self)
-        db.session.commit()
-
-    def delete(self):
-        db.session.delete(self)
-        db.session.commit()
-
-    def __str__(self):
-        return f'User: {self.username} Email: {self.email}'
-
-    def __repr__(self):
-        return f'User: {self.username} Email: {self.email}, Image: {self.image_file}'
-
-    def set_password(self, password):
-        pass_hash = generate_password_hash(password)
-        self.password = pass_hash
-
-    def check_password(self, password):
-        return check_password_hash(self.password, password)
-
+from flask_login import UserMixin,current_user
+from werkzeug.security import generate_password_hash,check_password_hash
 
 @login_manager.user_loader
-def user_loader(user_id):
-    return User.query.get(user_id)
+def load_user(user_id):
+  return User.query.get(user_id)
+
+class User(UserMixin,db.Model):
+  __tablename__ = 'users'
+  id = db.Column(db.Integer, primary_key = True)
+  username = db.Column(db.String(255),unique = True,nullable = False)
+  email  = db.Column(db.String(255),unique = True,nullable = False)
+  secure_password = db.Column(db.String(255),nullable = False)
+  bio = db.Column(db.String(255))
+  profile_pic_path = db.Column(db.String())
+  blogs = db.relationship('Blog', backref='user', lazy='dynamic')
+  comment = db.relationship('Comment', backref='user', lazy='dynamic')
 
 
-class Post(db.Model):
-    __tablename__ = 'posts'
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String, nullable=False)
-    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    content = db.Column(db.Text, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+  @property
+  def set_password(self):
+    raise AttributeError('You cannot read the password attribute')
 
-    def save(self):
-        db.session.add(self)
-        db.session.commit()
+  @set_password.setter
+  def password(self, password):
+    self.secure_password = generate_password_hash(password)
 
-    def delete(self):
-        db.session.delete(self)
-        db.session.commit()
+  def verify_password(self, password):
+    return check_password_hash(self.secure_password,password) 
+  
+  def save_u(self):
+    db.session.add(self)
+    db.session.commit()
 
-    def __repr__(self):
-        return f'Post title: {self.title}, Date Posted: {self.date_posted}, Post Content: {self.content}'
+  def delete(self):
+    db.session.delete(self)
+    db.session.commit()
+  
+  def __repr__(self):
+    return f'User {self.username}'
 
+class Blog(db.Model):
+  __tablename__ = 'blogs'
+  id = db.Column(db.Integer, primary_key = True)
+  title = db.Column(db.String(255),nullable = False)
+  description = db.Column(db.Text(), nullable = False)
+  content = db.Column(db.Text(), nullable = False)
+  user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+  time = db.Column(db.DateTime, default = datetime.utcnow)
+  comment = db.relationship('Comment', backref='blog', lazy='dynamic')
+
+  def save(self):
+    db.session.add(self)
+    db.session.commit()
+
+  def delete(self):
+    db.session.delete(self)
+    db.session.commit()
+
+  def get_blog(id):
+    blog = Blog.query.filter_by(id=id).first()
+    return blog
+
+  def __repr__(self):
+    return f'Blog {self.title}'
 
 class Comment(db.Model):
-    __tablename__ = 'comments'
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)
-    comment = db.Column(db.Text())
+  __tablename__='comments'
 
-    def save(self):
-        db.session.add(self)
-        db.session.commit()
+  id = db.Column(db.Integer,primary_key = True)
+  comment = db.Column(db.String)
+  posted = db.Column(db.DateTime,default=datetime.utcnow)
+  blog_id = db.Column(db.Integer,db.ForeignKey("blogs.id"))
+  user_id = db.Column(db.Integer,db.ForeignKey("users.id"))
 
-    @classmethod
-    def get_comments(cls, post_id):
-        comments = Comment.query.filter_by(post_id=post_id).all()
-        return comments
+  def save(self):
+    db.session.add(self)
+    db.session.commit()
 
-    def delete(self):
-        db.session.delete(self)
-        db.session.commit()
+  def delete(self):
+    db.session.remove(self)
+    db.session.commit()
 
-    def __repr__(self):
-        return f'Comments: {self.comment}'
+  def get_comment(id):
+    comment = Comment.query.all(id=id)
+    return comment
 
 
-class Like(db.Model):
-    __tablename__ = 'upvotes'
-    id = db.Column(db.Integer, primary_key=True)
-    upvote = db.Column(db.Integer, default=1)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
+  def __repr__(self):
+    return f'Comment {self.comment}'
 
-    def save(self):
-        db.session.add(self)
-        db.session.commit()
+class Quote:
+  """
+  Blueprint class for quotes consumed from API
+  """
+  def __init__(self, author, quote):
+    self.author = author
+    self.quote = quote
 
-    def upvote(cls, id):
-        upvote_post = Like(user=current_user, post_id=id)
-        upvote_post.save()
+class Subscriber(db.Model):
+  __tablename__='subscribers'
+  id=db.Column(db.Integer,primary_key=True)
+  email = db.Column(db.String(255),unique=True,index=True)
 
-    @classmethod
-    def query_upvotes(cls, id):
-        upvote = Like.query.filter_by(post_id=id).all()
-        return upvote
+  def save_subscriber(self):
+    db.session.add(self)
+    db.session.commit()
 
-    @classmethod
-    def all_upvotes(cls):
-        upvotes = Like.query.order_by('id').all()
-        return upvotes
-
-    def __repr__(self):
-        return f'{self.user_id}:{self.post_id}'
+  def __repr__(self):
+    return f'Subscriber {self.email}'

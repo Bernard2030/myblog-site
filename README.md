@@ -56,6 +56,10 @@ Signup inputs
 |passward|Account password, eg @2030|
 |Confirm Password|Account password, eg @2030|
 
+## pictorial Discription
+<img src="./images/image1.png" alt="landing"/>
+<img src="./images/image2.png" alt="landing"/>
+<img src="./images/image3.png" alt="landing"/>
 	
 	
 	

@@ -1,7 +1,11 @@
 {% extends 'base.html' %}
-{%from 'display_quote_macro.html' import display_quotes%}
-{% from 'display_post_macro.html' import display_posts%}
-{%block content%}
+ {%from 'quotes_macro.html' import display_quotes%}
+
+
+
+{%from 'quotes_macro.html' import display_quotes%}
+{% from 'displaypost_macro.html' import display_posts%}
+
 
 
 <!DOCTYPE html>
@@ -14,7 +18,7 @@
 </head>
 <body>
 
-{% block styles%}
+    {% block styles%}
     {{ super() }}
     <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css"
     integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous" />
@@ -42,4 +46,4 @@
          </div>
      </article>
      {% endfor %}
-     {%endblock%}
+     {%endblock%} 

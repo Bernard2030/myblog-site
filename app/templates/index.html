@@ -32,6 +32,7 @@
     
       <h1>{{display_quotes(quotes)}}</h1>
      {% for post in posts %}
+     <div class="container">
      
      <article class="media content-section">
          <img class="rounded-circle article-img"
@@ -45,5 +46,6 @@
              <p class="article-content">{{ post.content }}</p>
          </div>
      </article>
+    </div>
      {% endfor %}
      {%endblock%} 

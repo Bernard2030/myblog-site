@@ -8,8 +8,8 @@ from flask_login import current_user, login_required
 from app import app
 from app import db
 from app.main import main
-from app.main.forms import UpdateAccountForm, PostForm
-from app.models import Post, Clap, Comment
+from app.main.forms import UpdateForm, PostForm
+from app.models import Post, Like, Comment
 from app.requests import getQuotes
 
 
@@ -27,10 +27,7 @@ def save_picture(form_picture):
     picture_fn = random_hex + f_ext
     picture_path = os.path.join(app.root_path, 'static/profile_pic', picture_fn)
 
-    # output_size = (125, 125)
-    # i = Image.open(form_picture)
-    # i.thumbnail(output_size)
-    # i.save(picture_path)
+    
 
     return picture_fn
 
@@ -38,7 +35,7 @@ def save_picture(form_picture):
 @main.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
-    form = UpdateAccountForm()
+    form = UpdateForm()
     if form.validate_on_submit():
         if form.picture.data:
             picture_file = save_picture(form.picture.data)
@@ -113,8 +110,8 @@ def delete_post(post_id):
 @login_required
 def upvote(id):
     post = Post.query.get(id)
-    clap = Clap(post=post, upvote=1)
-    clap.save()
+    like = Like(post=post, upvote=1)
+    like.save()
     return redirect(url_for('main.myposts'))
 
 

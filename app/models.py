@@ -87,7 +87,7 @@ class Comment(db.Model):
         return f'Comments: {self.comment}'
 
 
-class Clap(db.Model):
+class Like(db.Model):
     __tablename__ = 'upvotes'
     id = db.Column(db.Integer, primary_key=True)
     upvote = db.Column(db.Integer, default=1)
@@ -99,17 +99,17 @@ class Clap(db.Model):
         db.session.commit()
 
     def upvote(cls, id):
-        upvote_post = Clap(user=current_user, post_id=id)
+        upvote_post = Like(user=current_user, post_id=id)
         upvote_post.save()
 
     @classmethod
     def query_upvotes(cls, id):
-        upvote = Clap.query.filter_by(post_id=id).all()
+        upvote = Like.query.filter_by(post_id=id).all()
         return upvote
 
     @classmethod
     def all_upvotes(cls):
-        upvotes = Clap.query.order_by('id').all()
+        upvotes = Like.query.order_by('id').all()
         return upvotes
 
     def __repr__(self):

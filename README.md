@@ -1,14 +1,14 @@
 ## Myblog
-Is an application that allows users to view and create poats  The user will submit their posts in the and can like other peoples post
+Is an application that allows users to create and share  opinions and other users can read and comment on them. the application also has random quotes that inspire users.
 
-Author
+## Author
 Bernard Opiyo
 
-Installation
+## Installation
 Use the following command to install all the requirement applications. pip freeze -r requirements.txt
 
-setup
-Run git clone https://github.com/Bernard2030/pitches2-center or download the zip file from github.
+## setup
+Run git clone https://github.com/Bernard2030/myblog-site or download the zip file from github.
 
 After extracting the files,
 
@@ -22,7 +22,7 @@ Running the application python3 manage.py server
 
 Running tests python3 manage.py test.
 
-Technologies used
+## Technologies used
 ** Python3.8 ** Flask ** Javascript ** HTML5 ** Bootstrap5
 
 user story
@@ -35,23 +35,35 @@ user story
 * As a writer, I would also like to create a blog from the application.
 * As a writer, I would like to delete comments that I find insulting or degrading.
 * As a writer, I would like to update or delete blogs I have created.
-BDD
+## BDD
 Login Inputs
 
-Inputs	Description
-Username	Account username, eg niez
-Password	Account password, eg @2030
+| Inputs  | Description |
+| ------------- | ------------- |
+| Username | Account username, eg niez  |
+| Password  | Account password, eg @2030 |
+
+	
+	
+	
 Signup inputs
 
-Inputs	Description
-Username	Account username, eg niez
-Email	Account password, eg @2030
-Confirm Password	Account password, eg @2030
-Known Bugs
+| Inputs  | Description|
+| ------------- | ------------- |
+| Username  | Account username, eg niez  |
+| Email | Account email e.g bro@gmail.com|
+|passward|Account password, eg @2030 |
+|Confirm Password|Account password, eg @2030|
+
+	
+	
+	
+	
+## Known Bugs
 There are no known bugs at the moment if you find any reach out through brobernard.254@gmail.com
 
-Collaboration
+## Collaboration
 To contribute on the application you can do so by reaching me on brobernard.254@gmail.com
 
-LICENSE
+## LICENSE
 MIT License Copyright (c) [2021] [Bernard Opiyo] Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

@@ -24,7 +24,7 @@ idna==2.10
 importlib-metadata==4.5.0
 itsdangerous==1.1.0
 Jinja2==2.11.3
-Mako==1.1.4
+Mako==1.2.2
 markdown2==2.4.0
 MarkupSafe==2.0.1
 Pillow==8.2.0
